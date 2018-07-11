@@ -134,6 +134,8 @@ class Satellite:
 
     def clear_flash(self):
         self.flash = None
+        print('%s is unflashed'%self.name)
+
 
 if __name__ == '__main__':
     def blah(a,b):

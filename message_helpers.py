@@ -133,7 +133,7 @@ def read_swap_message(message,preamble='10101010'*2):
 
 
 if __name__ == '__main__':
-
+    '''
     #Simple test world with two satellites
     #make the world
     Test_World = world.World()
@@ -169,7 +169,59 @@ if __name__ == '__main__':
     print('network_id: %d, Source Satellite ID: %d, Destination Satellite ID: %d, function: %d, destination location: %s, hop: %d, message: %s, '%tuple(read_swap_message(s1.recieve_buffer)))
 
     #So now is the cool part! We can flash each satellite with a different program that we program in python and simulate how it'll behave.
-    # In this way it is completely customizable and testable to different environments and
+    # In this way it is completely customizable and testable to different environments and goals.
+    # satellite.flash is a method by which we can load these simulated satellites with programs so they know how to deal with inputs.
+
+    # Let's make a simple example:'''
+
+
+# EXAMPLE 2
+
+
+    def example(satellite):
+        #if the satellite has a message in it's receive buffer then send a message.(The equivalent of kicksat blink)
+        if satellite.recieve_buffer:
+            print('%s is sending..'%satellite.name)
+            message = make_swap_message()
+            satellite.write_to_transmission_buffer(message,satellite.location)
+            satellite.send_message()
+
+    #we flash the satellites
+
+    sample = make_swap_message(preamble='10101010' * 2, network_id=1, function=2, destination_sat=41, source_sat=32,
+                               destination_reg=2, hop=1, thing='01110', source_reg=0)
+
+
+    Test_World = world.World()
+
+    s1 = satellites.Satellite(original_state=np.array([0, 0, 0, 0, 0, 0]), network=1, satellite_name='1')
+    Test_World.add_satellite(s1)
+
+    s2 = satellites.Satellite(original_state=np.array([0, 0, 1, 0, 0, 0]), network=1, satellite_name='2')
+    Test_World.add_satellite(s2)
+
+    s2.write_to_transmission_buffer(sample)
+
+    #flash the satellites
+    s1.flash_prog(example)
+    s2.flash_prog(example)
+
+    num_steps = 10
+    s2.send_message()
+    for i in range(num_steps):
+        Test_World.take_time_step()
+
+    #unflash the satellites
+
+    s1.clear_flash()
+    s2.clear_flash()
+
+
+
+
+
+
+
     #print(Test_World.satellites)
 
 

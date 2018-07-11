@@ -26,7 +26,7 @@ class World:
         self.satellites.append(satellite)
 
 
-    def take_time_step(self):
+    def take_time_step(self,*args):
         """
 
         :return:
@@ -49,6 +49,8 @@ class World:
                 #print(real_message)
                 print('Intensity of the Message is: %f for %s'%(intensity_of_message,satellite.sensitivity))
                 satellite.write_to_receive_buffer(real_message,intensity_of_message)
+            if satellite.flash != None:
+                satellite.run_prog(satellite,*args)
         self.flying_messages =[]
             #send the messages to each of the satellites
 
