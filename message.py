@@ -1,7 +1,9 @@
+# The Messages
+
 from numpy.linalg import norm
 c = 3e8
+import numpy as np
 
-global c
 
 class Message:
 
@@ -24,10 +26,13 @@ class Message:
         :param x2:
         :return:
         """
+        if norm(np.array(x2)-np.array(self.start_location))==0:
+            #print('yes')
+            return 0,self.message
         radius = norm(self.start_location-x2)
         intensity = self.start_intensity* (radius)/(self.start_radius)  # This is for the 2D geometry
         #intensity = self.start_intensity* (radius**2)/(self.start_radius**2) # This is for the 3D geometry
-        return intensity
+        return intensity,self.message
 
 
 

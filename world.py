@@ -1,21 +1,20 @@
-### The world the satellites live in
+### The world the satellites and messages live in
 
 
 import numpy as np
-from .satellites import *
-from .message import Message
+import satellites
+import message
 global c
 
 class World:
 
-    def __init__(self,original_satellites =[],dt = .05,error_rate=.001):
+    def __init__(self,original_satellites =[],dt = .1,error_rate=.001):
         """
 
         :param original_satellites:
         :param dt:
         :param error_rate:
         """
-        c = 3e8
         self.satellites = []
         for satellite in original_satellites:
             self.satellites.append(satellite)
@@ -33,17 +32,27 @@ class World:
         :return:
         """
         for satellite in self.satellites:
+            #print(satellite.outgoing_message_buffer)
+            if satellite.outgoing_message_buffer:
+                mess1 = satellite.outgoing_message_buffer[0]
+                #print(mess1)
+                satellite.outgoing_message_buffer = []
+                self.add_message(mess1,satellite.location,satellite.power)
+
+
+        for satellite in self.satellites:
             satellite.move(self.dt)
             satellite.time +=1
             #satellite.accelerate(self.dt)
-            for message in self.flying_messages:
-                intensity_of_message,real_message = message.propagate(satellite.location)
-                if intensity_of_message>= satellite.sensitivity:
-                    satellite.incoming_message_buffer.append(real_message)
+            for mess in self.flying_messages:
+                intensity_of_message,real_message = mess.propagate(satellite.location)
+                #print(real_message)
+                print('Intensity of the Message is: %f for %s'%(intensity_of_message,satellite.sensitivity))
+                satellite.write_to_receive_buffer(real_message,intensity_of_message)
         self.flying_messages =[]
             #send the messages to each of the satellites
 
-    def add_message(self,message,start_location,start_intensity):
+    def add_message(self,mess,start_location,start_intensity):
         """
 
         :param message:
@@ -51,7 +60,8 @@ class World:
         :param start_intensity:
         :return:
         """
-        self.flying_messages.append(Message(message,start_location,start_intensity))
+        #print(type(self.flying_messages))
+        self.flying_messages.append(message.Message(mess,start_location,start_intensity))
 
 
 

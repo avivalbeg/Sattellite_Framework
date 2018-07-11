@@ -4,9 +4,9 @@
 
 ## This is for the SWAP packet structure
 
-from .world import World
-from .satellites import Satellite
-from
+import world
+import satellites
+import numpy as np
 
 ######################################################################################################################
 def convert_to_binary(number,size):
@@ -109,7 +109,7 @@ def read_swap_message(message,preamble='10101010'*2):
     #print(important_part[:4])
 
     network_id = convert_from_binary(important_part[:4])
-    print(important_part[4:12])
+    #print(important_part[4:12])
     source_sat = convert_from_binary(important_part[4:12])
     destination_sat = convert_from_binary(important_part[12:20])
     func = important_part[20:24]
@@ -134,8 +134,45 @@ def read_swap_message(message,preamble='10101010'*2):
 
 if __name__ == '__main__':
 
-#Simple test world with 
-    Test_World =
+    #Simple test world with two satellites
+    #make the world
+    Test_World = world.World()
+
+    #making our first stationary satellite at the origin and adding it to the world
+    s1 = satellites.Satellite(original_state=np.array([0,0,0,0,0,0]),network=1,satellite_name='1')
+    Test_World.add_satellite(s1)
+
+    #making our second stationary satellite at (0,0,1) and add it to the world
+    s2 = satellites.Satellite(original_state=np.array([0, 0, 1, 0, 0, 0]), network=1,satellite_name='2')
+    Test_World.add_satellite(s2)
+
+    #making our first SWAP message. You can make any packet structure or behavior you like.
+    sample = make_swap_message(preamble='10101010'*2, network_id=1, function=2, destination_sat=41, source_sat=32,
+                      destination_reg=2, hop=1, thing='01110', source_reg=0)
+    print("The SWAP message is %s"%sample)
+
+    #We stage the message for transmission in the satellite
+    s2.write_to_transmission_buffer(sample)
+
+    #We then stage the message from satellite two in the world. When the message is sent from here the out_message_buffer will be cleared.
+    print('sending from satellite 2')
+    s2.send_message()
+
+    #taking the time step moves the satellites forward in time dt
+    Test_World.take_time_step()
+
+    # We can then check if the first satellite received the message
+    print(s1.recieve_buffer== sample)
+
+    #Now we also made a SWAP decoder so we can see what it means
+
+    print('network_id: %d, Source Satellite ID: %d, Destination Satellite ID: %d, function: %d, destination location: %s, hop: %d, message: %s, '%tuple(read_swap_message(s1.recieve_buffer)))
+
+    #So now is the cool part! We can flash each satellite with a different program that we program in python and simulate how it'll behave.
+    # In this way it is completely customizable and testable to different environments and
+    #print(Test_World.satellites)
+
+
 
     #message = make_swap_message()
     #print(convert_to_binary(5,4))
